@@ -1,0 +1,11 @@
+# Spike + heavy abrupt disconnections: burst to concurrency, but ~40% of calls drop HARD
+# (socket killed, no clean WS close) early. Tests whether the LB's in-flight accounting
+# recovers from ungraceful drops (a pod whose in-flight count is inflated by dead sockets
+# would wrongly be avoided; one whose count under-counts would be overloaded).
+CONC=150
+RUN_S=720
+ARRIVAL=burst
+LONG_PCT=25
+MED_PCT=35
+ABRUPT_PCT=40
+ABRUPT_MAX_S=20

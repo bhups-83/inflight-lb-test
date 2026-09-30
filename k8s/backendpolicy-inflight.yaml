@@ -1,0 +1,32 @@
+# IN_FLIGHT balancing: the GFE tracks the number of OPEN proxied sessions per NEG
+# endpoint (pod) and steers each new connection to the least-loaded pod. This is the
+# mode under test -- it is the only native GCLB mode that accounts for long-lived
+# WebSocket connections (RATE/UTILIZATION go blind after the WS 101 upgrade).
+#
+# Requirements / gotchas:
+#   - balancingMode: IN_FLIGHT REQUIRES trafficDuration: LONG (else the policy is rejected).
+#   - maxInFlightRequestsPerEndpoint is the soft per-pod cap; it cannot be set under RATE.
+#   - Apply this OR backendpolicy-rate.yaml (same name) -- they are the A/B toggle.
+apiVersion: networking.gke.io/v1
+kind: GCPBackendPolicy
+metadata:
+  name: inflight-backend-policy
+  namespace: default
+  labels: {experiment: inflight}
+spec:
+  targetRef:
+    group: ""
+    kind: Service
+    name: inflight-dummy-svc
+  default:
+    trafficDuration: LONG                # required for IN_FLIGHT
+    balancingMode: IN_FLIGHT
+    maxInFlightRequestsPerEndpoint: 30   # soft per-pod cap (e.g. 150 conc / 6 pods = 25 < 30)
+    sessionAffinity:
+      type: NONE
+    timeoutSec: 3600
+    connectionDraining:
+      drainingTimeoutSec: 10
+    logging:                     # ALB access logs -> Cloud Logging (resource.type=http_load_balancer)
+      enabled: true
+      sampleRate: 1000000        # 0..1000000 == 0..100%

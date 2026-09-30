@@ -1,0 +1,11 @@
+# Oscillating load: concurrency swings between ~CONC/3 and CONC on a fixed period,
+# mimicking autoscale churn / traffic that repeatedly ramps and drains. Tests whether the
+# LB keeps the distribution even as total load moves up and down (and, if you add/remove
+# pods mid-run, whether new empty pods get filled quickly).
+CONC=150
+RUN_S=900
+ARRIVAL=wave
+WAVE_PERIOD=90
+LONG_PCT=25
+MED_PCT=35
+ABRUPT_PCT=15

@@ -1,0 +1,10 @@
+# Steady baseline: ramp up to concurrency, then hold. Shows the settled per-pod
+# distribution WITHOUT the opening-burst effect. Compare IN_FLIGHT vs RATE live-CV here --
+# if they match, RATE/round-robin is "good enough" for steady traffic.
+CONC=150
+RUN_S=720
+ARRIVAL=ramp
+RAMP_RATE=25
+LONG_PCT=25
+MED_PCT=35
+ABRUPT_PCT=0

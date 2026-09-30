@@ -1,0 +1,11 @@
+# Skew stress: 60% long-lived calls, so a few pods accumulate most of the long-running
+# connections (the "1-2 pods keep >50% long-running connections" scenario). This is where
+# RATE/round-robin (no live-count feedback) should drift worst and IN_FLIGHT should
+# actively rebalance -- the clearest A/B separator for heterogeneous durations.
+CONC=150
+RUN_S=900
+ARRIVAL=burst
+LONG_PCT=60
+MED_PCT=25
+LONG_MIN=400
+ABRUPT_PCT=10

@@ -1,0 +1,31 @@
+# Global External Application Load Balancer (GFE-based) via the GKE Gateway API.
+# IN_FLIGHT balancing is a Global-External-ALB capability -> gatewayClassName must be
+# gke-l7-global-external-managed (regional Envoy ALBs use localityLbPolicy instead and
+# do NOT expose IN_FLIGHT). Provisioning a public IP takes a few minutes.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: inflight-gw
+  namespace: default
+  labels: {experiment: inflight}
+spec:
+  gatewayClassName: gke-l7-global-external-managed
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces: {from: Same}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: inflight-route
+  namespace: default
+  labels: {experiment: inflight}
+spec:
+  parentRefs:
+    - {name: inflight-gw}
+  rules:
+    - backendRefs:
+        - {name: inflight-dummy-svc, port: 80}

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inflight-dummy
+  namespace: default
+  labels: {app: inflight-dummy, experiment: inflight}
+spec:
+  replicas: 6                       # "5-8 pods, bare-minimum CPU/RAM" per the test plan
+  selector:
+    matchLabels: {app: inflight-dummy}
+  template:
+    metadata:
+      labels: {app: inflight-dummy, experiment: inflight}
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: dummy
+          image: __IMAGE__          # build server/Dockerfile, push, and substitute (scripts/setup.sh does this)
+          env:
+            - name: POD_NAME
+              valueFrom: {fieldRef: {fieldPath: metadata.name}}
+            - name: PORT
+              value: "8080"
+          ports:
+            - {containerPort: 8080, name: ws}
+          readinessProbe:
+            httpGet: {path: /, port: 8080}
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {cpu: 250m, memory: 128Mi}

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: inflight-dummy-svc
+  namespace: default
+  labels: {experiment: inflight}
+  annotations:
+    # Container-native load balancing (pod NEGs) -- required so the ALB balances across
+    # pods directly instead of through kube-proxy/iptables (which would hide per-pod load).
+    cloud.google.com/neg: '{"ingress": true}'
+spec:
+  type: ClusterIP
+  selector: {app: inflight-dummy}
+  sessionAffinity: None
+  ports:
+    - {name: ws, port: 80, targetPort: 8080, protocol: TCP}

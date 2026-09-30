@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inflight-dummy-long
+  namespace: default
+  labels: {app: inflight-dummy, role: long, experiment: inflight}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: inflight-dummy, role: long}
+  template:
+    metadata:
+      labels: {app: inflight-dummy, role: long, experiment: inflight}
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: dummy
+          image: __IMAGE__
+          command: ["python3", "/scripts/dummy_ws_server.py"]
+          env:
+            - {name: POD_NAME, valueFrom: {fieldRef: {fieldPath: metadata.name}}}
+            - {name: PORT, value: "8080"}
+            - {name: SERVER_DECIDES_DURATION, value: "1"}
+            - {name: LONG_HOLD, value: "1"}
+            - {name: HOLD_LONG_MIN, value: "300"}
+            - {name: HOLD_LONG_MAX, value: "600"}
+          ports: [{containerPort: 8080, name: ws}]
+          readinessProbe: {httpGet: {path: /, port: 8080}, initialDelaySeconds: 3, periodSeconds: 5}
+          resources: {requests: {cpu: 600m, memory: 256Mi}, limits: {cpu: 600m, memory: 256Mi}}
+          volumeMounts: [{name: scripts, mountPath: /scripts}]
+      volumes:
+        - name: scripts
+          configMap: {name: inflight-dummy-script}

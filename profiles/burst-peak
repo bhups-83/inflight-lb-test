@@ -1,0 +1,9 @@
+# The 8AM spike: all connections arrive within a couple of seconds and hold. This is the
+# primary concern -- does the LB spread a sudden burst, or overshoot/pin some pods? Watch
+# the first 30s snapshots and the burst_overshoot line in the summary.
+CONC=150
+RUN_S=720
+ARRIVAL=burst
+LONG_PCT=25
+MED_PCT=35
+ABRUPT_PCT=0

@@ -1,0 +1,30 @@
+# RATE balancing (the A/B baseline): the GFE distributes by request RATE -- effectively
+# round-robin on connection COUNT. It has NO feedback on how many connections a pod is
+# CURRENTLY holding, so with heterogeneous call durations the live-connection skew is not
+# corrected. This is the "even on opened-count, but can drift/pin on live-count" baseline.
+#
+# Apply this OR backendpolicy-inflight.yaml (same metadata.name) to flip the A/B.
+#   - maxInFlightRequestsPerEndpoint is NOT allowed under RATE (must be removed).
+#   - maxRatePerEndpoint must be high enough not to 503 under the test load.
+apiVersion: networking.gke.io/v1
+kind: GCPBackendPolicy
+metadata:
+  name: inflight-backend-policy
+  namespace: default
+  labels: {experiment: inflight}
+spec:
+  targetRef:
+    group: ""
+    kind: Service
+    name: inflight-dummy-svc
+  default:
+    balancingMode: RATE
+    maxRatePerEndpoint: 1000
+    sessionAffinity:
+      type: NONE
+    timeoutSec: 3600
+    connectionDraining:
+      drainingTimeoutSec: 10
+    logging:                     # ALB access logs -> Cloud Logging (resource.type=http_load_balancer)
+      enabled: true
+      sampleRate: 1000000        # 0..1000000 == 0..100%

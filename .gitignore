@@ -1,0 +1,5 @@
+results/
+.gw_ip
+__pycache__/
+*.pyc
+!results/example-runs/
